@@ -34,6 +34,27 @@ Each annotation consists of four fields separated by `#`:
 3. **quality** (u8): Quality score (0-255)
 4. **strand** (char): Strand orientation (`+` or `-`)
 
+
+### Molecular Coordinates
+All coordiantes are "molecular coordiantes" meaning:
+- **0-based, half-open intervals** [start, end)
+- Coordinates are in the orientation of the sequenced molecule
+- For reverse-strand alignments, coordinates do not change; they reflect the original molecule orientation
+
+### Strand Information
+
+- **`+`**: Annoation is on the forward strand of the sequenced molecule
+- **`-`**: Annotation is on the reverse strand of the sequenced molecule
+
+### Converting to Reference Coordinates
+
+Reference coordinates are computed on-the-fly using the BAM alignment (CIGAR string) and are not stored in the `MA:Z` tag. i.e. alignment does not change the `MA` tag.
+
+## Quality Scores
+
+Quality scores (0-255) represent confidence in the annotation using the same convention as base modification quality scores.
+
+
 ## Common Annotation Types
 
 ### Standard Fiber-seq Annotations
@@ -72,24 +93,3 @@ MA:Z:msp:100#50#255#+,200#60#200#+;nuc:150#103#0#+,300#100#0#+
 
 - 2 MSP annotations (forward strand)
 - 2 nucleosome annotations (forward strand)
-
-## Coordinate System
-
-### Molecular Coordinates
-
-- **0-based, half-open intervals** [start, end)
-- Coordinates are in the orientation of the sequenced molecule
-- For reverse-strand alignments, coordinates do not change; they reflect the original molecule orientation
-
-### Strand Information
-
-- **`+`**: Annoation is on the forward strand of the sequenced molecule
-- **`-`**: Annotation is on the reverse strand of the sequenced molecule
-
-### Converting to Reference Coordinates
-
-Reference coordinates are computed on-the-fly using the BAM alignment (CIGAR string) and are not stored in the `MA:Z` tag.
-
-## Quality Scores
-
-Quality scores (0-255) represent confidence in the annotation using the same convention as base modification quality scores.
