@@ -7,44 +7,49 @@ With the advent of functional single-molecule sequencing, there is an emerging n
 ### Structure
 
 ```
-MA:Z:annotation_type1:start1#len1#qual1#strand1,start2#len2#qual2#strand2;annotation_type2:start1#len1#qual1#strand1
+MA:Z:annotation_type1.:start1#len1#qual1,start2#len2#qual2;annotation_type2+:start1#len1#qual1;annotation_type2-:start1#len1#qual1
 ```
 
 Regex:
 
 ```
-^(([a-zA-Z0-9_]+):((\d+#\d+#\d+#[+-])?(,\d+#\d+#\d+#[+-])*);?)+$
+^(([a-zA-Z0-9_]+)[+-.]:((\d+#\d+#\d+)?(,\d+#\d+#\d+)*);?)+$
 ```
 
 ### Delimiters
 
 | Delimiter | Purpose                                  | Example                       |
 | --------- | ---------------------------------------- | ----------------------------- |
-| `;`       | Separates different annotation types     | `msp:...;nuc:...;fire:...`    |
-| `:`       | Separates annotation type name from data | `msp:100#50#255#+`            |
-| `,`       | Separates annotations of the same type   | `100#50#255#+,200#60#200#+`   |
-| `#`       | Separates fields within an annotation    | `start#length#quality#strand` |
+| `;`       | Separates different annotation types     | `msp+:...;nuc-:...;fire.:...` |
+| `:`       | Separates annotation type name from data | `msp:100#50#255`              |
+| `,`       | Separates annotations of the same type   | `100#50#255,200#60#200`       |
+| `#`       | Separates fields within an annotation    | `start#length#quality`        |
+
+### Annotation Type Name
+
+The annotation type name is an alphanumeric string (including underscores) that describes the type of annotation followed by a strand indicator where:
+
+- **`+`**: Annotation is on the forward strand of the sequenced molecule
+- **`-`**: Annotation is on the reverse strand of the sequenced molecule
+- **`.`**: Strand information is not applicable or unknown
+
+e.g., `msp+`, `nuc-`, `fire.`
 
 ### Annotation Fields
 
-Each annotation consists of four fields separated by `#`:
+Each annotation consists of three fields separated by `#`:
 
 1. **start** (i64): Start position in molecular coordinates (0-based)
 2. **length** (i64): Length of the annotation in base pairs
 3. **quality** (u8): Quality score (0-255)
-4. **strand** (char): Strand orientation (`+` or `-`)
-
 
 ### Molecular Coordinates
-All coordiantes are "molecular coordiantes" meaning:
+
+All coordinates are "molecular coordinates" meaning:
+
 - **0-based, half-open intervals** [start, end)
 - Coordinates are in the orientation of the sequenced molecule
 - For reverse-strand alignments, coordinates do not change; they reflect the original molecule orientation
-
-### Strand Information
-
-- **`+`**: Annoation is on the forward strand of the sequenced molecule
-- **`-`**: Annotation is on the reverse strand of the sequenced molecule
 
 ### Converting to Reference Coordinates
 
@@ -53,7 +58,6 @@ Reference coordinates are computed on-the-fly using the BAM alignment (CIGAR str
 ## Quality Scores
 
 Quality scores (0-255) represent confidence in the annotation using the same convention as base modification quality scores.
-
 
 ## Common Annotation Types
 
@@ -78,7 +82,7 @@ The format supports arbitrary annotation type names, allowing for:
 ### Single Annotation Type
 
 ```
-MA:Z:msp:100#50#255#+,200#60#200#+
+MA:Z:msp+:100#50#255,200#60#200
 ```
 
 - Two MSP annotations on the forward strand
@@ -88,7 +92,7 @@ MA:Z:msp:100#50#255#+,200#60#200#+
 ### Multiple Annotation Types
 
 ```
-MA:Z:msp:100#50#255#+,200#60#200#+;nuc:150#103#0#+,300#100#0#+
+MA:Z:msp+:100#50#255,200#60#200;nuc+:150#103#0,300#100#0
 ```
 
 - 2 MSP annotations (forward strand)
