@@ -67,44 +67,13 @@ e.g., `msp+`, `nuc-`, `fire.`
 
 Strand information is relative to the sequenced molecule and follows the same convention as the MM and ML tags for base modifications in the SAM specification:
 
-- **All coordinates are in read orientation**: Coordinates always refer to positions in the original read sequence, starting from the leftmost base (position 0).
-- **For forward-strand annotations (`+`)**: The annotation feature is on the forward/Watson strand of the DNA molecule.
-- **For reverse-strand annotations (`-`)**: The annotation feature is on the reverse/Crick strand of the DNA molecule. Coordinates still start from the left of the read sequence.
+- **All coordinates are in read orientation**: Coordinates always refer to positions on the forward strand of the original read sequence (i.e. starting from the leftmost base of the unaligned read).
+- **For reverse-strand annotations (`-`)**: The annotation feature is on the reverse/Crick strand of the DNA molecule; however, coordinates still start from the left of the read sequence on the forward strand.
 - **Strand is independent of alignment**: The strand indicator describes the biology of the feature, not the alignment orientation. If a read aligns to the reverse strand of a reference, the MA tag strand indicators remain unchanged.
 
-**Example**: For a read sequencing a DNA molecule, an annotation at `feature-:100` means:
+**Example of strand-specific annotations** on a read of length 10 (where `#` marks the annotated region, `-` marks unannotated positions, and coordinates are 0-based):
 
-- The feature starts at position 100 from the left of the original read sequence
-- The feature is biologically on the reverse/Crick strand of the DNA molecule
-- This interpretation is the same whether the read aligns forward or reverse to a reference genome
-
-**Examples of strand-specific annotations** on a read of length 10 (where `#` marks the annotated region, `-` marks unannotated positions, and coordinates are 0-based):
-
-**Example 1:** A CTCF footprint on the forward strand of length 5 starting at position 2:
-
-```
-MA:Z:ctcf+:2
-AL:B:I,5
-AQ:B:C,255
-
-Position: 0123456789
-Forward:  --#####---
-Reverse:  ----------
-```
-
-**Example 2:** A CTCF site on the reverse strand of length 3 starting at position 1:
-
-```
-MA:Z:ctcf-:1
-AL:B:I,3
-AQ:B:C,255
-
-Position: 0123456789
-Forward:  ----------
-Reverse:  -###------
-```
-
-**Example 3:** Both forward and reverse strand features on the same read:
+This shows CTCF annotations on both the forward strand (start 0 length 4) and reverse strand (start 5 length 3).
 
 ```
 MA:Z:ctcf+:0;ctcf-:5
@@ -115,8 +84,6 @@ Position: 0123456789
 Forward:  ####------
 Reverse:  -----###--
 ```
-
-This shows CTCF annotations on both the forward strand (positions 0-3) and reverse strand (positions 5-7).
 
 ### Annotation Data
 
