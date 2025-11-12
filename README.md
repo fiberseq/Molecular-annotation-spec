@@ -67,14 +67,14 @@ e.g., `msp+`, `nuc-`, `fire.`
 
 Strand information is relative to the sequenced molecule and follows the same convention as the MM and ML tags for base modifications in the SAM specification:
 
-- **All coordinates are in read orientation**: Coordinates always refer to positions in the read sequence as stored in the SEQ field, starting from the leftmost base (position 0).
+- **All coordinates are in read orientation**: Coordinates always refer to positions in the original read sequence, starting from the leftmost base (position 0).
 - **For forward-strand annotations (`+`)**: The annotation feature is on the forward/Watson strand of the DNA molecule.
 - **For reverse-strand annotations (`-`)**: The annotation feature is on the reverse/Crick strand of the DNA molecule. Coordinates still start from the left of the read sequence.
 - **Strand is independent of alignment**: The strand indicator describes the biology of the feature, not the alignment orientation. If a read aligns to the reverse strand of a reference, the MA tag strand indicators remain unchanged.
 
 **Example**: For a read sequencing a DNA molecule, an annotation at `feature-:100` means:
 
-- The feature starts at position 100 from the left of the read sequence (in the SEQ field)
+- The feature starts at position 100 from the left of the original read sequence
 - The feature is biologically on the reverse/Crick strand of the DNA molecule
 - This interpretation is the same whether the read aligns forward or reverse to a reference genome
 
