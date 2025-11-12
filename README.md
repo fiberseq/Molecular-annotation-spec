@@ -53,7 +53,7 @@ All coordinates in the MA tag are "molecular coordinates" meaning:
 | --------- | ---------------- | ---------- |
 | `,`       | Separates values | `50,60,70` |
 
-### Annotation Type Name
+### Annotation Type within the MA Tag
 
 The annotation type name is an alphanumeric string (including underscores) that describes the type of annotation followed by a strand indicator where:
 
