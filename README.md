@@ -1,4 +1,4 @@
-# Molecular annotation (MA:Z:) tag
+# Molecular annotation tags
 
 With the advent of functional single-molecule sequencing, there is an emerging need to annotate non-genetic elements on individual DNA molecules. This is handled for base modifications using the MM and ML tags. However, we have a need for a more extensible format beyond base modifications that allows for generic annotation of any segment of a molecule. To accomplish this we are proposing the `MA` tag, and we describe the format of this tag below.
 
@@ -8,24 +8,50 @@ Integration of this spec or a similar one into the SAM/BAM/CRAM is needed to sta
 
 ### Structure
 
+The molecular annotation format uses four related tags:
+
+- **MA:Z:** - Molecular Annotation start positions (required u32 integers)
+- **AL:B:I** - Annotation Lengths (required signed 32-bit integers)
+- **AQ:B:C** - Annotation Quality scores (required unsigned 8-bit integers)
+- **AN:Z:** - Annotation Names (optional labels for individual annotations)
+
 ```
-MA:Z:annotation_type1.:start1#len1#qual1,start2#len2#qual2;annotation_type2+:start1#len1#qual1;annotation_type2-:start1#len1#qual1
+MA:Z:annotation_type1+:start1,start2;annotation_type2-:start1
+AL:B:I,len1,len2,len3
+AQ:B:C,qual1,qual2,qual3
+AN:Z:name1,name2,name3
 ```
 
-Regex:
+Regex for MA tag:
 
 ```
-^(([a-zA-Z0-9_]+)[+-.]:((\d+#\d+#\d+)?(,\d+#\d+#\d+)*);?)+$
+^(([a-zA-Z0-9_]+)[+-.]:((\d+)(,\d+)*);?)+$
 ```
+
+### Molecular Coordinates
+
+All coordinates in the MA tag are "molecular coordinates" meaning:
+
+- **0-based positions**: Start positions use 0-based indexing (first base of the read is position 0)
+- **Half-open intervals**: The annotated region spans [start, start+length), where start is inclusive and end is exclusive
+- **Read orientation**: Coordinates are always in the orientation of the sequenced molecule, counting from the left
+- **Alignment independent**: For reverse-strand alignments, coordinates do not change; they reflect the original molecule orientation
 
 ### Delimiters
+
+**MA tag delimiters:**
 
 | Delimiter | Purpose                                  | Example                       |
 | --------- | ---------------------------------------- | ----------------------------- |
 | `;`       | Separates different annotation types     | `msp+:...;nuc-:...;fire.:...` |
-| `:`       | Separates annotation type name from data | `msp:100#50#255`              |
-| `,`       | Separates annotations of the same type   | `100#50#255,200#60#200`       |
-| `#`       | Separates fields within an annotation    | `start#length#quality`        |
+| `:`       | Separates annotation type name from data | `msp+:100,200`                |
+| `,`       | Separates start positions                | `100,200,300`                 |
+
+**AL, AQ, AN tag delimiters:**
+
+| Delimiter | Purpose          | Example    |
+| --------- | ---------------- | ---------- |
+| `,`       | Separates values | `50,60,70` |
 
 ### Annotation Type Name
 
@@ -37,21 +63,73 @@ The annotation type name is an alphanumeric string (including underscores) that 
 
 e.g., `msp+`, `nuc-`, `fire.`
 
-### Annotation Fields
+#### Strand Convention
 
-Each annotation consists of three fields separated by `#`:
+Strand information is relative to the sequenced molecule and follows the same convention as the MM and ML tags for base modifications in the SAM specification:
 
-1. **start** (i64): Start position in molecular coordinates (0-based)
-2. **length** (i64): Length of the annotation in base pairs
-3. **quality** (u8): Quality score (0-255)
+- **All coordinates are in read orientation**: Coordinates always refer to positions in the read sequence as stored in the SEQ field, starting from the leftmost base (position 0).
+- **For forward-strand annotations (`+`)**: The annotation feature is on the forward/Watson strand of the DNA molecule.
+- **For reverse-strand annotations (`-`)**: The annotation feature is on the reverse/Crick strand of the DNA molecule. Coordinates still start from the left of the read sequence.
+- **Strand is independent of alignment**: The strand indicator describes the biology of the feature, not the alignment orientation. If a read aligns to the reverse strand of a reference, the MA tag strand indicators remain unchanged.
 
-### Molecular Coordinates
+**Example**: For a read sequencing a DNA molecule, an annotation at `feature-:100` means:
 
-All coordinates are "molecular coordinates" meaning:
+- The feature starts at position 100 from the left of the read sequence (in the SEQ field)
+- The feature is biologically on the reverse/Crick strand of the DNA molecule
+- This interpretation is the same whether the read aligns forward or reverse to a reference genome
 
-- **0-based, half-open intervals** [start, end)
-- Coordinates are in the orientation of the sequenced molecule
-- For reverse-strand alignments, coordinates do not change; they reflect the original molecule orientation
+**Examples of strand-specific annotations** on a read of length 10 (where `#` marks the annotated region, `-` marks unannotated positions, and coordinates are 0-based):
+
+**Example 1:** A CTCF footprint on the forward strand of length 5 starting at position 2:
+
+```
+MA:Z:ctcf+:2
+AL:B:I,5
+AQ:B:C,255
+
+Position: 0123456789
+Forward:  --#####---
+Reverse:  ----------
+```
+
+**Example 2:** A CTCF site on the reverse strand of length 3 starting at position 1:
+
+```
+MA:Z:ctcf-:1
+AL:B:I,3
+AQ:B:C,255
+
+Position: 0123456789
+Forward:  ----------
+Reverse:  -###------
+```
+
+**Example 3:** Both forward and reverse strand features on the same read:
+
+```
+MA:Z:ctcf+:0;ctcf-:5
+AL:B:I,4,3
+AQ:B:C,200,180
+
+Position: 0123456789
+Forward:  ####------
+Reverse:  -----###--
+```
+
+This shows CTCF annotations on both the forward strand (positions 0-3) and reverse strand (positions 5-7).
+
+### Annotation Data
+
+Each annotation is represented across the four tags with corresponding values:
+
+1. **MA tag** - Start position in molecular coordinates (0-based, i64)
+2. **AL tag** - Length of the annotation in base pairs (i32)
+3. **AQ tag** - Quality score (0-255, u8)
+4. **AN tag** - Optional name/label for the annotation (string)
+
+The values in AL, AQ, and AN tags correspond positionally to the annotations defined in the MA tag. For example, the first start position in the MA tag corresponds to the first length in AL, the first quality in AQ, and the first name in AN.
+
+**Note:** When using the AN tag, if some annotations have names and others don't, use a `.` (period) to represent missing names. This maintains positional correspondence across all tags.
 
 ### Converting to Reference Coordinates
 
@@ -84,18 +162,34 @@ The format supports arbitrary annotation type names, allowing for:
 ### Single Annotation Type
 
 ```
-MA:Z:msp+:100#50#255,200#60#200
+MA:Z:msp+:100,200
+AL:B:I,50,60
+AQ:B:C,255,200
 ```
 
 - Two MSP annotations on the forward strand
-- First MSP: position 100, length 50, quality 255, forward strand
-- Second MSP: position 200, length 60, quality 200, forward strand
+- First MSP: start position 100, length 50, quality 255
+- Second MSP: start position 200, length 60, quality 200
 
 ### Multiple Annotation Types
 
 ```
-MA:Z:msp+:100#50#255,200#60#200;nuc+:150#103#0,300#100#0
+MA:Z:msp+:100,200;nuc+:150,300
+AL:B:I,50,60,103,100
+AQ:B:C,255,200,0,0
 ```
 
 - 2 MSP annotations (forward strand)
 - 2 nucleosome annotations (forward strand)
+
+### With Partial Names
+
+```
+MA:Z:msp+:100,200;nuc+:150,300
+AL:B:I,50,60,103,100
+AQ:B:C,255,200,0,0
+AN:Z:msp1,.,.,nuc2
+```
+
+- Only the first MSP and second nucleosome have names
+- Unnamed annotations are represented with `.` to maintain positional correspondence
