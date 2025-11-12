@@ -10,7 +10,7 @@ Integration of this spec or a similar one into the SAM/BAM/CRAM is needed to sta
 
 The molecular annotation format uses four related tags:
 
-- **MA:Z:** - Molecular Annotation start positions (required, u32 arrays separated by annotation type prefixes)
+- **MA:Z:** - Annotation start positions (required, u32 arrays separated by annotation type prefixes)
 - **AL:B:I** - Annotation Lengths (required, u32 array)
 - **AQ:B:C** - Annotation Quality scores (required, u8 array)
 - **AN:Z:** - Annotation Names (optional labels for individual annotations)
