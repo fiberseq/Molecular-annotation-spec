@@ -2,7 +2,7 @@
 
 With the advent of functional single-molecule sequencing, there is an emerging need to annotate non-genetic elements on individual DNA molecules. This is handled for base modifications using the MM and ML tags. However, we have a need for a more extensible format beyond base modifications that allows for generic annotation of any segment of a molecule. To accomplish this we are proposing the `MA` tag, and we describe the format of this tag below.
 
-Integration of this spec or a similar one into the SAM/BAM/CRAM is needed to standardize the representation of molecular annotations across different sequencing platforms and analysis tools. Importantly, a standardized format will allow for integration in a wide range of genomic tools, e.g. visualization in genome browsers.
+Integration of this spec or a similar one into the SAM/BAM/CRAM is needed to standardize the representation of molecular annotations across different sequencing platforms and analysis tools. Importantly, a standardized format will allow for integration in a wide range of genomic tools, e.g. visualization in genome browsers and allow developers to be justified in spending time integrating this format into their tools.
 
 ## Format Specification
 
