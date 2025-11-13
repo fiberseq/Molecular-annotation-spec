@@ -96,7 +96,7 @@ Each annotation is represented across the four tags with corresponding values:
 
 The values in AL, AQ, and AN tags correspond positionally to the annotations defined in the MA tag. For example, the first start position in the MA tag corresponds to the first length in AL, the first quality in AQ, and the first name in AN.
 
-**Note:** When using the AN tag, if some annotations have names and others don't, use a `.` (period) to represent missing names. This maintains positional correspondence across all tags.
+**Note:** When using the AN tag, if some annotations have names and others don't, use an empty string to represent missing names. This maintains positional correspondence across all tags.
 
 ### Converting to Reference Coordinates
 
@@ -155,8 +155,8 @@ AQ:B:C,255,200,0,0
 MA:Z:msp+:100,200;nuc+:150,300
 AL:B:I,50,60,103,100
 AQ:B:C,255,200,0,0
-AN:Z:msp1,.,.,nuc2
+AN:Z:msp1,,,nuc2
 ```
 
 - Only the first MSP and second nucleosome have names
-- Unnamed annotations are represented with `.` to maintain positional correspondence
+- Unnamed annotations are represented with an empty string to maintain positional correspondence
