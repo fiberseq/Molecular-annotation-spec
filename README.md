@@ -16,7 +16,7 @@ The molecular annotation format uses four related tags:
 - **AN:Z:** - Annotation Names (optional labels for individual annotations)
 
 ```
-MA:Z:annotation_type1+:start1,start2;annotation_type2-:start1
+MA:Z:annotation_type1+P:start1,start2;annotation_type2-:start1
 AL:B:I,len1,len2,len3
 AQ:B:C,qual1,qual2,qual3
 AN:Z:name1,name2,name3
@@ -25,7 +25,7 @@ AN:Z:name1,name2,name3
 Regex for MA tag:
 
 ```
-^(([a-zA-Z0-9_]+)[+-.]:((\d+)(,\d+)*);?)+$
+^(([a-zA-Z0-9_]+)[+-.][PQ]?:((\d+)(,\d+)*);?)+$
 ```
 
 ### Molecular Coordinates
@@ -41,11 +41,11 @@ All coordinates in the MA tag are "molecular coordinates" meaning:
 
 **MA tag delimiters:**
 
-| Delimiter | Purpose                                  | Example                       |
-| --------- | ---------------------------------------- | ----------------------------- |
-| `;`       | Separates different annotation types     | `msp+:...;nuc-:...;fire.:...` |
-| `:`       | Separates annotation type name from data | `msp+:100,200`                |
-| `,`       | Separates start positions                | `100,200,300`                 |
+| Delimiter | Purpose                                  | Example                        |
+| --------- | ---------------------------------------- | ------------------------------ |
+| `;`       | Separates different annotation types     | `msp+P:...;nuc-:...;fire.:...` |
+| `:`       | Separates annotation type name from data | `msp+P:100,200`                |
+| `,`       | Separates start positions                | `100,200,300`                  |
 
 **AL, AQ, AN tag delimiters:**
 
@@ -55,13 +55,22 @@ All coordinates in the MA tag are "molecular coordinates" meaning:
 
 ### Annotation Type within the MA Tag
 
-The annotation type name is an alphanumeric string (including underscores) that describes the type of annotation followed by a strand indicator where:
+The annotation type name is an alphanumeric string (including underscores) that describes the type of annotation followed by a strand indicator and an optional quality type indicator:
+
+**Strand indicator:**
 
 - **`+`**: Annotation is on the forward strand of the sequenced molecule
 - **`-`**: Annotation is on the reverse strand of the sequenced molecule
 - **`.`**: Strand information is not applicable or unknown
 
-e.g., `msp+`, `nuc-`, `fire.`
+**Quality type indicator (optional):**
+
+- **`P`**: Quality scores are phred-scaled
+- **`Q`**: Quality scores are linearly scaled (like ML tag, default if omitted)
+
+e.g., `msp+P`, `nuc-`, `fire.Q`
+
+When the quality type indicator is omitted, the quality scores are interpreted as normal quality values (Q).
 
 #### Strand Convention
 
@@ -134,9 +143,21 @@ AL:B:I,50,60
 AQ:B:C,255,200
 ```
 
-- Two MSP annotations on the forward strand
+- Two MSP annotations on the forward strand (quality type Q by default)
 - First MSP: start position 100, length 50, quality 255
 - Second MSP: start position 200, length 60, quality 200
+
+### Single Annotation Type with Phred Quality
+
+```
+MA:Z:msp+P:100,200
+AL:B:I,50,60
+AQ:B:C,40,30
+```
+
+- Two MSP annotations on the forward strand with phred-scaled quality scores
+- First MSP: start position 100, length 50, phred quality 40
+- Second MSP: start position 200, length 60, phred quality 30
 
 ### Multiple Annotation Types
 
@@ -146,8 +167,19 @@ AL:B:I,50,60,103,100
 AQ:B:C,255,200,0,0
 ```
 
-- 2 MSP annotations (forward strand)
-- 2 nucleosome annotations (forward strand)
+- 2 MSP annotations (forward strand, normal quality)
+- 2 nucleosome annotations (forward strand, normal quality)
+
+### Multiple Annotation Types with Mixed Quality Types
+
+```
+MA:Z:msp+P:100,200;nuc+:150,300
+AL:B:I,50,60,103,100
+AQ:B:C,40,35,255,200
+```
+
+- 2 MSP annotations (forward strand, phred quality)
+- 2 nucleosome annotations (forward strand, normal quality)
 
 ### With Partial Names
 
