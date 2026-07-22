@@ -6,6 +6,8 @@ Integration of this spec or a similar one into the SAM/BAM/CRAM is needed to sta
 
 A Rust and Python implentation of this spec can be found [here](https://github.com/fiberseq/fibertools-rs/tree/main/molecular-annotation).
 
+A compression benchmark comparing the inline length encoding (this spec) against a split encoding that moves lengths into a separate `AL` array is in [`benchmark/compression`](benchmark/compression/RESULTS.md).
+
 ## Format Specification
 
 ### Structure
