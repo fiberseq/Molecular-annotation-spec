@@ -48,3 +48,9 @@ Thumbs.db
 
 # UniFFI generated bindings
 java/generated/
+
+# benchmark: pixi env + working files (compression/ results are tracked)
+.pixi/
+benchmark/scratch/
+benchmark/test-data/
+benchmark/.gitignore
