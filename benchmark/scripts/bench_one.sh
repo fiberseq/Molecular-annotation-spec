@@ -10,5 +10,5 @@ samp=$(basename "$inline" .10k.bam)
 t=$(mktemp -d "${TMPDIR:-/tmp}/ma_${samp}.XXXXXX")
 trap 'rm -rf "$t"' EXIT
 
-RESHAPE_THREADS=${RESHAPE_THREADS:-1}
+RESHAPE_THREADS=${RESHAPE_THREADS:-2}
 python scripts/reshape_ma.py "$inline" "$t" "$samp" "$RESHAPE_THREADS"

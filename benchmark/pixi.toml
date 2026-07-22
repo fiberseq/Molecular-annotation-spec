@@ -12,7 +12,10 @@ download = "scripts/download_all.sh"
 bench = "scripts/run_bench.sh"
 
 [dependencies]
-python = ">=3.14.6,<3.15"
+# pin 3.13: on linux-64 the only pysam build for py3.14 is free-threaded (cp314t),
+# which makes pysam re-enable the GIL and warn on every import. 3.13 ships the
+# standard GIL build for both platforms.
+python = ">=3.13,<3.14"
 pysam = ">=0.24.0,<0.25"
 samtools = ">=1.24,<2"
 fibertools-rs = ">=0.10.1,<0.11"

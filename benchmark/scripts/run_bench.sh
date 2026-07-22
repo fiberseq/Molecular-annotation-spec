@@ -6,12 +6,12 @@ set -euo pipefail
 #
 # Parallelism knobs (set on the cluster to run many/all samples at once):
 #   JOBS             samples processed concurrently        (default 8)
-#   RESHAPE_THREADS  htslib threads per writer within one  (default 1)
+#   RESHAPE_THREADS  htslib threads per pysam reader/writer (default 2)
 # Each sample is ~main-thread bound (~4 cores) and buffers CRAM slices in RAM, so
 # size a node with enough cores/RAM before cranking JOBS. To run all 46 at once:
 #   JOBS=46 pixi run bench
 JOBS=${JOBS:-8}
-export RESHAPE_THREADS=${RESHAPE_THREADS:-1}
+export RESHAPE_THREADS=${RESHAPE_THREADS:-2}
 
 mkdir -p compression
 ls test-data/hprc/*.10k.bam | xargs -P "$JOBS" -n1 scripts/bench_one.sh \
