@@ -24,36 +24,35 @@ construction. Round-trip split→inline verified.
 
 ## Results (total bytes over all 46; `agree` = samples where split is smaller)
 
-> Representative full-46 run. Re-run `pixi run bench` to regenerate
-> `results.tsv`/`summary.txt`; switching AL to uint32 slightly raises the split
-> figures in the BAM rows (CRAM is re-coded and barely moves).
-
 | scope | cont | level |          inline |           split | split−in |  agree |
 |-------|------|-------|----------------:|----------------:|---------:|-------:|
-| full  | bam  | fast  |   8,998,457,042 |   9,003,223,089 |  +0.05%  | 19/46  |
-| full  | bam  | def   |   8,073,228,213 |   8,081,075,183 |  +0.10%  | 10/46  |
-| full  | bam  | arch  |   7,627,313,389 |   7,626,028,812 |  −0.02%  | 23/46  |
-| full  | cram | fast  |   6,841,192,133 |   6,821,394,708 |  −0.29%  | 45/46  |
-| full  | cram | def   |   6,447,921,892 |   6,428,670,297 |  −0.30%  | 45/46  |
-| full  | cram | arch  |   6,329,581,022 |   6,303,097,338 |  −0.42%  | 45/46  |
-| tag   | bam  | fast  |     328,527,672 |     332,735,916 |  +1.28%  |  1/46  |
-| tag   | bam  | def   |     309,426,043 |     325,234,432 |  +5.11%  |  0/46  |
-| tag   | bam  | arch  |     295,163,198 |     299,589,134 |  +1.50%  |  4/46  |
-| tag   | cram | fast  |     279,058,686 |     251,961,958 |  −9.71%  | 46/46  |
-| tag   | cram | def   |     278,999,518 |     251,900,434 |  −9.71%  | 46/46  |
-| tag   | cram | arch  |     278,968,579 |     245,548,456 | −11.98%  | 46/46  |
+| full  | bam  | fast  |   8,998,456,782 |   9,024,176,501 |  +0.29%  |  0/46  |
+| full  | bam  | def   |   8,073,228,090 |   8,095,765,102 |  +0.28%  |  0/46  |
+| full  | bam  | arch  |   7,627,313,335 |   7,634,670,495 |  +0.10%  |  3/46  |
+| full  | cram | fast  |   6,841,336,024 |   6,843,414,267 |  +0.03%  | 10/46  |
+| full  | cram | def   |   6,447,248,370 |   6,428,092,060 |  −0.30%  | 44/46  |
+| full  | cram | arch  |   6,339,317,375 |   6,313,959,152 |  −0.40%  | 45/46  |
+| tag   | bam  | fast  |     328,527,266 |     350,614,816 |  +6.72%  |  0/46  |
+| tag   | bam  | def   |     309,425,800 |     340,254,627 |  +9.96%  |  0/46  |
+| tag   | bam  | arch  |     295,163,012 |     314,145,700 |  +6.43%  |  0/46  |
+| tag   | cram | fast  |     279,061,960 |     274,297,298 |  −1.71%  | 46/46  |
+| tag   | cram | def   |     279,002,967 |     253,606,283 |  −9.10%  | 46/46  |
+| tag   | cram | arch  |     278,971,833 |     247,210,576 | −11.39%  | 46/46  |
 
 ## Takeaways
 
-- **Container decides the sign, at every level.** split helps only under CRAM's
-  per-series codecs (homogeneous `AL` array + starts column compress far better than
-  interleaved `start-len` text). Under BAM/gzip split is neutral-to-worse.
-- **Archival CRAM (level 9) is split's best case: −11.98% on the annotation payload,
-  −0.42% whole-file, 46/46 and 45/46 samples.** Higher effort widens split's CRAM lead.
-- **BAM never favors split** at the tag level (+1.3% to +5.1%); the penalty is worst at
-  default and shrinks at the extremes as gzip effort changes.
-- **Whole-file impact is small** (≤0.42%): sequence + m6A kinetics dominate the file.
-- Per annotation (archival CRAM): split saves ~0.46 B; (default BAM) costs ~0.22 B.
+- **Container decides the sign, unanimously.** Every BAM tag row is 0/46 (split
+  bigger); every CRAM tag row is 46/46 (split smaller). split wins only under CRAM's
+  per-series codecs, which pack the homogeneous `AL` integer array and the starts
+  column far better than interleaved `start-len` text.
+- **Archival CRAM (level 9) is split's best case: −11.39% on the annotation payload,
+  −0.40% whole-file (46/46 and 45/46 samples).** More compression effort widens the
+  CRAM lead (tag CRAM −1.71% fast → −9.10% default → −11.39% archival).
+- **BAM never favors split**, and the uint32 `AL` makes it clearly worse: +6.4% to
+  +10.0% on the tag payload (0/46), worst at the default level.
+- **Whole-file impact stays small** (≤0.40%): sequence + m6A kinetics dominate the file
+  regardless of MA layout.
+- Per annotation: split **saves ~0.43 B** in archival CRAM; **costs ~0.42 B** in default BAM.
 
 **Net:** for CRAM-stored Fiber-seq data — especially archival — splitting lengths into
 `AL` is a consistent win. For BAM it is not.
@@ -63,7 +62,8 @@ construction. Round-trip split→inline verified.
 ```bash
 pixi install
 pixi run download   # inline-MA 10k subsample per sample -> test-data/hprc/*.10k.bam
-pixi run bench      # -> compression/summary.txt, compression/results.tsv
+JOBS=46 pixi run bench   # -> compression/summary.txt, compression/results.tsv
 ```
 
-`results.tsv` is long-format: `sample form scope level container bytes`.
+`results.tsv` is long-format: `sample form scope level container bytes` (plus `META`
+rows carrying read/annotation counts).
