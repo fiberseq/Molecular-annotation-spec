@@ -31,7 +31,10 @@ END{
   for(k=1;k<=nl;k++) for(i=1;i<=ns;i++) for(j=1;j<=nc;j++){   # sort: level, scope, cont
     g=SC[i]"|"CO[j]"|"LV[k]; a=tot[g,"inline"]; b=tot[g,"split"]
     if(a==0) continue
-    agree=0; for(s in seen) if(val[s,g,"split"]<val[s,g,"inline"]) agree++
+    # agree = samples whose per-sample sign matches the aggregate direction
+    adir=(b>=a)?1:-1; agree=0
+    for(s in seen){ d=val[s,g,"split"]-val[s,g,"inline"]
+      if(d>0 && adir>0) agree++; else if(d<0 && adir<0) agree++ }
     lab = (LV[k]==1?"1fast":(LV[k]==6?"6def":"9arch"))
     printf "| %-5s | %-5s | %-4s | %15d | %15d | %+7.2f%% | %2d/%d |\n", lab,SC[i],CO[j],a,b,(b-a)/a*100,agree,N
   }
