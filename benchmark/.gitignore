@@ -1,7 +1,0 @@
-# pixi environments
-.pixi/*
-!.pixi/config.toml
-scratch/
-test-data/
-compression/results.tsv
-compression/summary.txt
