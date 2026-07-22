@@ -2,7 +2,7 @@
 authors = ["Mitchell R. Vollger <mvollger@gmail.com>"]
 channels = ["conda-forge", "bioconda"]
 name = "benchmark"
-platforms = ["osx-arm64"]
+platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"
 
 [tasks]
