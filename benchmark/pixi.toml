@@ -1,0 +1,22 @@
+[workspace]
+authors = ["Mitchell R. Vollger <mvollger@gmail.com>"]
+channels = ["conda-forge", "bioconda"]
+name = "benchmark"
+platforms = ["osx-arm64", "linux-64"]
+version = "0.1.0"
+
+[tasks]
+# download only: raw 10k-read subsample of each HPRC cram in samples.txt
+download = "scripts/download_all.sh"
+# benchmark: derive inline/split transiently, measure across levels -> compression/
+bench = "scripts/run_bench.sh"
+
+[dependencies]
+# pin 3.13: on linux-64 the only pysam build for py3.14 is free-threaded (cp314t),
+# which makes pysam re-enable the GIL and warn on every import. 3.13 ships the
+# standard GIL build for both platforms.
+python = ">=3.13,<3.14"
+pysam = ">=0.24.0,<0.25"
+samtools = ">=1.24,<2"
+fibertools-rs = ">=0.10.1,<0.11"
+tqdm = ">=4.69.0,<5"
