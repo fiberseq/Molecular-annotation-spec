@@ -1,6 +1,6 @@
 # Molecular annotations
 
-Molecular annotations describe intervals (`annotations`) on the sequence as
+The molecular annotation tags (`MA`, `AQ`, and `AN`) describe intervals (`annotations`) on the sequence as
 originally reported by the sequencing instrument. These `annotations` describe
 molecular features (`annotation types`) spanning one or more bases, for example:
 nucleosome positions, methylation-accessible patches, and protein binding
@@ -20,8 +20,7 @@ orientation of the sequenced molecule. Starts in `MA` are 1-based.
 The first field is the length of `SEQ` at the time the `MA` value was last
 written. This allows tools to detect when `SEQ` has later been trimmed, clipped,
 or otherwise altered. If this length differs from the current `SEQ` length,
-`MA` should not be used to index the current `SEQ`. `AQ` and `AN` are
-positional companions to `MA` and should be interpreted consistently with it.
+the interval positions in `MA` tag have been invalidated.
 
 Each block begins with an `annotation type` name, followed by a strand character
 and optional quality specifier. An `annotation type` is the feature being
@@ -39,7 +38,7 @@ values per `annotation`. `P` indicates one Phred-scaled confidence value. `Q`
 indicates one linearly scaled probability value, using the same byte mapping as
 `ML`. Multiple characters, such as `PQ`, indicate multiple `AQ` values per
 `annotation` in the stated order. If the specifier is absent, no `AQ` values are
-stored for `annotations` in that block.
+stored for `annotations` of that `annotation type`.
 
 The coordinate list is a comma-separated list of intervals written
 `start-length`. Lengths are the number of bases spanned by the `annotation`, so
@@ -58,7 +57,7 @@ conflicting quality specifiers.
 
 `AQ:B:C,qualities`
 
-The optional `AQ` tag lists quality values for `annotations` in `MA` order. It
+The optional `AQ` tag lists quality values for `annotations` in `MA` order, stored in a u8 array. It
 is omitted when no `annotation type` has quality values. The SAM encoding uses a
 byte array of type `C`. The number of `AQ` elements must equal the sum, over all
 `MA` blocks, of the number of intervals multiplied by the number of
@@ -106,7 +105,6 @@ AQ:B:C,220,205,180
 The two `ctcf` blocks are the same `annotation type`, split by strand. The
 first block contains two `annotations` on the same strand as the original
 sequenced molecule; the second contains one `annotation` on the opposite strand.
-All three use the same quality specifier.
 
 Similarly:
 
@@ -119,5 +117,4 @@ AN:Z:msp1,,msp3,
 The `msp` `annotation type` has three unstranded `annotations` with
 Phred-scaled qualities. The `nuc` `annotation type` has one unstranded
 `annotation` without a quality value. `AN` names the first and third msp
-`annotations`; these names do not define new `annotation types`. The second msp
-and the nuc `annotation` are unnamed.
+`annotations`. The second msp and the nuc `annotation` are unnamed.
